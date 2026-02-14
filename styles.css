@@ -32,3 +32,20 @@
 .filter-btn.active .material-icons-round {
     color: white !important;
 }
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Ensure Google Maps controls don't overflow on mobile */
+@media (max-width: 768px) {
+    .gm-style .gmnoprint,
+    .gm-style .gm-fullscreen-control {
+        transform: scale(0.85);
+    }
+}
