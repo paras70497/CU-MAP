@@ -6,21 +6,25 @@
 // 1. Predefined Campus Locations
 // ──────────────────────────────────────────────
 const campusLocations = [
-  { name: "CU Main Canteen",        lat: 30.7714, lng: 76.5762, category: "food"    },
-  { name: "South Campus Canteen",   lat: 30.7690, lng: 76.5730, category: "food"    },
-  { name: "Subway Outlet",          lat: 30.7705, lng: 76.5748, category: "food"    },
-  { name: "Domino's CU",            lat: 30.7720, lng: 76.5770, category: "food"    },
-  { name: "Library Block",          lat: 30.7700, lng: 76.5755, category: "library" },
-  { name: "Digital Library",        lat: 30.7708, lng: 76.5740, category: "library" },
-  { name: "Block A",                lat: 30.7710, lng: 76.5735, category: "block"   },
-  { name: "Block B",                lat: 30.7718, lng: 76.5728, category: "block"   },
-  { name: "Block C",                lat: 30.7725, lng: 76.5742, category: "block"   },
-  { name: "Block D",                lat: 30.7698, lng: 76.5760, category: "block"   },
-  { name: "Admin Block",            lat: 30.7730, lng: 76.5752, category: "block"   },
-  { name: "Basketball Court",       lat: 30.7695, lng: 76.5720, category: "ground"  },
-  { name: "Cricket Ground",         lat: 30.7685, lng: 76.5710, category: "ground"  },
-  { name: "Football Ground",        lat: 30.7680, lng: 76.5725, category: "ground"  },
-  { name: "Tennis Court",           lat: 30.7692, lng: 76.5745, category: "ground"  },
+  // ── Food ──
+  { name: "PFC Food Court",          lat: 30.7715064, lng: 76.5694492, category: "food"    },
+  { name: "Food Republic",           lat: 30.7668459, lng: 76.5760314, category: "food"    },
+  { name: "The Corner Cafe",         lat: 30.7691371, lng: 76.5763082, category: "food"    },
+  { name: "Urban Cafe",              lat: 30.772447,  lng: 76.5748641, category: "food"    },
+  // ── Library ──
+  { name: "Central Library",         lat: 30.7701683, lng: 76.5755912, category: "library" },
+  { name: "DD1 Block Library",       lat: 30.7735722, lng: 76.5695049, category: "library" },
+  // ── Block ──
+  { name: "Block A1",                lat: 30.7716488, lng: 76.5782589, category: "block"   },
+  { name: "Block B2",                lat: 30.7691341, lng: 76.5758641, category: "block"   },
+  { name: "Block D5",                lat: 30.7709588, lng: 76.5697969, category: "block"   },
+  { name: "Block 17",                lat: 30.7735523, lng: 76.5708688, category: "block"   },
+  { name: "South Campus",            lat: 30.7708668, lng: 76.5703153, category: "block"   },
+  // ── Ground ──
+  { name: "CU Main Ground",          lat: 30.7670957, lng: 76.5753727, category: "ground"  },
+  { name: "Main Sports Ground",      lat: 30.768908,  lng: 76.5687556, category: "ground"  },
+  { name: "CU Cricket Ground",       lat: 30.7669867, lng: 76.5740000, category: "ground"  },
+  { name: "Basketball Court",        lat: 30.7685000, lng: 76.5700000, category: "ground"  },
 ];
 
 // ──────────────────────────────────────────────
@@ -40,8 +44,8 @@ let activeTab        = "explore"; // current mobile tab
 // 3. Initialise the Map (Google Maps callback)
 // ──────────────────────────────────────────────
 function initMap() {
-  // CU campus center coordinates
-  const cuCenter = { lat: 30.7710, lng: 76.5740 };
+  // CU campus center coordinates (actual campus midpoint)
+  const cuCenter = { lat: 30.7700, lng: 76.5730 };
 
   map = new google.maps.Map(document.getElementById("map"), {
     center: cuCenter,
