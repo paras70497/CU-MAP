@@ -32,6 +32,7 @@ let userMarker       = null;      // User's own location marker
 let userPosition     = null;      // { lat, lng } of the user
 let activeCategory   = "all";     // Current filter
 let infoWindow;                   // Shared InfoWindow
+let isMobile         = window.innerWidth < 768; // responsive check
 
 // ──────────────────────────────────────────────
 // 3. Initialise the Map (Google Maps callback)
@@ -66,6 +67,22 @@ function initMap() {
 
   // Request the user's geolocation
   requestUserLocation();
+
+  // "My Location" FAB on mobile
+  const locateBtn = document.getElementById("locate-btn");
+  if (locateBtn) {
+    locateBtn.addEventListener("click", () => {
+      if (userPosition) {
+        map.panTo(userPosition);
+        map.setZoom(17);
+      } else {
+        requestUserLocation();
+      }
+    });
+  }
+
+  // Track viewport changes
+  window.addEventListener("resize", () => { isMobile = window.innerWidth < 768; });
 }
 
 // ──────────────────────────────────────────────
@@ -127,9 +144,11 @@ function clearMarkers() {
 // ──────────────────────────────────────────────
 function requestUserLocation() {
   const statusEl = document.getElementById("rec-status");
+  const statusElMobile = document.getElementById("rec-status-mobile");
 
   if (!navigator.geolocation) {
-    statusEl.textContent = "Geolocation not supported by your browser.";
+    if (statusEl) statusEl.textContent = "Geolocation not supported by your browser.";
+    if (statusElMobile) statusElMobile.textContent = "Geolocation not supported.";
     return;
   }
 
@@ -156,12 +175,15 @@ function requestUserLocation() {
         zIndex: 999,
       });
 
-      statusEl.textContent = "Showing 5 nearest places to you:";
+      if (statusEl) statusEl.textContent = "Showing nearest places:";
+      if (statusElMobile) statusElMobile.textContent = "Showing locations near you";
       updateRecommendations();
     },
     (err) => {
       console.warn("Geolocation error:", err.message);
-      statusEl.textContent = "Location access denied. Showing all locations.";
+      if (statusEl) statusEl.textContent = "Location denied. Showing all.";
+      if (statusElMobile) statusElMobile.textContent = "Location denied. Showing all.";
+      updateRecommendations();
     }
   );
 }
@@ -195,10 +217,12 @@ function haversineDistance(pos1, pos2) {
 // 7. Recommendations Panel
 // ──────────────────────────────────────────────
 
-/** Build & display the top 5 nearest locations */
+/** Build & display the nearest locations in BOTH desktop and mobile panels */
 function updateRecommendations() {
-  const listEl   = document.getElementById("rec-list");
-  const statusEl = document.getElementById("rec-status");
+  const listEl       = document.getElementById("rec-list");
+  const listElMobile = document.getElementById("rec-list-mobile");
+  const statusEl     = document.getElementById("rec-status");
+  const statusElMobile = document.getElementById("rec-status-mobile");
 
   // Filter by active category
   let filtered = activeCategory === "all"
@@ -206,10 +230,11 @@ function updateRecommendations() {
     : campusLocations.filter((l) => l.category === activeCategory);
 
   if (!userPosition) {
-    statusEl.textContent = "Enable location to see nearby places.";
-    // If no location, show all (or filtered) items without distance
-    listEl.innerHTML = filtered.map(buildListItem).join("");
-    addListClickListeners(listEl);
+    if (statusEl) statusEl.textContent = "Enable location to see nearby places.";
+    if (statusElMobile) statusElMobile.textContent = "Enable location to see nearby places.";
+    // Show all without distance
+    if (listEl) { listEl.innerHTML = filtered.map(buildDesktopCard).join(""); addListClickListeners(listEl); }
+    if (listElMobile) { listElMobile.innerHTML = filtered.map(buildMobileCard).join(""); addListClickListeners(listElMobile); }
     return;
   }
 
@@ -218,42 +243,44 @@ function updateRecommendations() {
     .map((loc) => ({ ...loc, dist: haversineDistance(userPosition, loc) }))
     .sort((a, b) => a.dist - b.dist);
 
-  // Take top 10 for the new UI
+  // Take top 10
   const topItems = filtered.slice(0, 10);
 
-  statusEl.innerText = `Showing ${topItems.length} nearest${activeCategory !== "all" ? ` (${activeCategory})` : ""} places`;
+  const statusText = `Showing ${topItems.length} nearest${activeCategory !== "all" ? ` (${activeCategory})` : ""} places`;
+  if (statusEl) statusEl.innerText = statusText;
+  if (statusElMobile) statusElMobile.innerText = `Showing locations near you`;
 
-  listEl.innerHTML = topItems.map(buildListItem).join("");
-
-  // Add click listeners (pan map to marker)
-  addListClickListeners(listEl);
+  // Desktop sidebar
+  if (listEl) {
+    listEl.innerHTML = topItems.map(buildDesktopCard).join("");
+    addListClickListeners(listEl);
+  }
+  // Mobile bottom sheet
+  if (listElMobile) {
+    listElMobile.innerHTML = topItems.map(buildMobileCard).join("");
+    addListClickListeners(listElMobile);
+  }
 }
 
-/** Render the "All Locations" list (Hidden in new UI but kept for logic) */
-function renderAllLocations(locations) {
-  // no-op or just update the main list if needed
-}
+/** Render the "All Locations" list (no-op in current UI) */
+function renderAllLocations(locations) {}
 
-/** HTML for a single list item (Card Style) */
-function buildListItem(loc) {
-  const distLabel  = loc.dist != null ? `${loc.dist.toFixed(2)} km away` : "Distance unknown";
-  
-  // Design configuration based on category
+// ─── Desktop Card (existing design) ────────────────────────
+
+function buildDesktopCard(loc) {
+  const distLabel = loc.dist != null ? `${loc.dist.toFixed(2)} km away` : "Distance unknown";
+
   const config = {
-    food:    { icon: "restaurant",    bg: "bg-orange-50",    text: "text-accent-orange", badge: "bg-orange-100 text-orange-800" },
-    library: { icon: "local_library", bg: "bg-blue-50",      text: "text-primary",       badge: "bg-blue-100 text-blue-800" },
-    block:   { icon: "business",      bg: "bg-indigo-50",    text: "text-indigo-600",    badge: "bg-indigo-100 text-indigo-800" },
-    ground:  { icon: "park",          bg: "bg-emerald-50",   text: "text-emerald-600",   badge: "bg-emerald-100 text-emerald-800" },
-    default: { icon: "place",         bg: "bg-slate-50",     text: "text-slate-600",     badge: "bg-slate-100 text-slate-800" }
+    food:    { icon: "restaurant",    bg: "bg-orange-50",  text: "text-accent",       badge: "bg-orange-100 text-orange-800" },
+    library: { icon: "local_library", bg: "bg-blue-50",    text: "text-primary",      badge: "bg-blue-100 text-blue-800" },
+    block:   { icon: "business",      bg: "bg-indigo-50",  text: "text-indigo-600",   badge: "bg-indigo-100 text-indigo-800" },
+    ground:  { icon: "park",          bg: "bg-emerald-50", text: "text-emerald-600",  badge: "bg-emerald-100 text-emerald-800" },
+    default: { icon: "place",         bg: "bg-slate-50",   text: "text-slate-600",    badge: "bg-slate-100 text-slate-800" }
   };
-
   const style = config[loc.category] || config.default;
-  const isDark = document.documentElement.classList.contains('dark'); // Check if dark mode is active (simple check)
 
-  // Using Tailwind classes from the new design
-  // Added 'group/card' to avoid specified group conflict if any
   return `
-    <div class="rec-item group relative bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-all cursor-pointer"
+    <div class="rec-item group bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-all cursor-pointer"
          data-lat="${loc.lat}" data-lng="${loc.lng}">
       <div class="flex items-start gap-4">
         <div class="flex-shrink-0 h-12 w-12 rounded-full ${style.bg} dark:bg-opacity-10 flex items-center justify-center ${style.text}">
@@ -262,20 +289,53 @@ function buildListItem(loc) {
         <div class="flex-1 min-w-0">
           <div class="flex justify-between items-start">
             <h3 class="font-bold text-slate-900 dark:text-white truncate pr-2 group-hover:text-primary transition-colors">${loc.name}</h3>
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${style.badge} dark:bg-opacity-20 capitalize">
-              ${loc.category}
-            </span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${style.badge} dark:bg-opacity-20 capitalize">${loc.category}</span>
           </div>
           <div class="flex items-center justify-between mt-3">
-             <div class="flex items-center text-xs text-slate-500 dark:text-slate-400 font-medium">
-                <span class="material-icons-round text-sm mr-1">near_me</span>
-                ${distLabel}
-             </div>
-             <button class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-full font-medium transition-colors">
-                Navigate
-             </button>
+            <div class="flex items-center text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <span class="material-icons-round text-sm mr-1">near_me</span>
+              ${distLabel}
+            </div>
+            <button class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-full font-medium transition-colors">Navigate</button>
           </div>
         </div>
+      </div>
+    </div>`;
+}
+
+// ─── Mobile Card (Phoneview design) ────────────────────────
+
+function buildMobileCard(loc) {
+  const distLabel = loc.dist != null ? `${(loc.dist * 1000).toFixed(0)}m` : "—";
+
+  const config = {
+    food:    { icon: "lunch_dining", bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-600 dark:text-orange-400" },
+    library: { icon: "menu_book",    bg: "bg-blue-100 dark:bg-blue-900/30",     text: "text-blue-600 dark:text-blue-400" },
+    block:   { icon: "apartment",    bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-600 dark:text-purple-400" },
+    ground:  { icon: "stadium",      bg: "bg-green-100 dark:bg-green-900/30",   text: "text-green-600 dark:text-green-400" },
+    default: { icon: "place",        bg: "bg-slate-100 dark:bg-slate-700",      text: "text-slate-600 dark:text-slate-400" }
+  };
+  const style = config[loc.category] || config.default;
+
+  return `
+    <div class="rec-item group bg-white dark:bg-slate-800 p-4 rounded-lg shadow-soft border border-slate-100 dark:border-slate-700/50 flex items-center justify-between hover:border-primary/30 transition-all cursor-pointer"
+         data-lat="${loc.lat}" data-lng="${loc.lng}">
+      <div class="flex items-center gap-4">
+        <div class="h-12 w-12 rounded-full ${style.bg} ${style.text} flex items-center justify-center">
+          <span class="material-icons">${style.icon}</span>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">${loc.name}</h3>
+          <div class="flex items-center gap-1 mt-0.5">
+            <span class="text-xs text-slate-400 capitalize">${loc.category}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col items-end gap-2">
+        <span class="text-xs font-bold text-primary dark:text-blue-300 bg-primary/10 dark:bg-blue-900/30 px-2 py-1 rounded-full">${distLabel}</span>
+        <button class="h-8 w-8 rounded-full bg-slate-50 dark:bg-slate-700 hover:bg-primary hover:text-white dark:hover:bg-primary flex items-center justify-center transition-colors text-slate-400">
+          <span class="material-icons text-sm">near_me</span>
+        </button>
       </div>
     </div>`;
 }
@@ -309,11 +369,12 @@ function initFilterButtons() {
 
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      // Toggle active class
-      buttons.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-
       activeCategory = btn.dataset.category;
+
+      // Sync active class across BOTH mobile & desktop button sets
+      buttons.forEach((b) => {
+        b.classList.toggle("active", b.dataset.category === activeCategory);
+      });
 
       // Filter markers on map
       const filtered =
