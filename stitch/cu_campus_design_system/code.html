@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CU Campus Design System</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1e3b8a",
+                        "accent": "#f97316", // Soft Orange approximation
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121620",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e2433",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200 antialiased selection:bg-primary/20 selection:text-primary transition-colors duration-300">
+<!-- Header Section -->
+<header class="w-full bg-surface-light dark:bg-surface-dark border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
+<div>
+<h1 class="text-3xl font-bold text-primary dark:text-white tracking-tight">CU Campus <span class="text-slate-400 font-light">Design System</span></h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Smart Campus Navigation UI Kit • v1.0.0</p>
+</div>
+<div class="flex gap-4">
+<button class="bg-primary/10 hover:bg-primary/20 text-primary dark:text-blue-300 px-6 py-2 rounded-full font-medium transition-colors">
+                    Download Assets
+                </button>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 py-12 space-y-20">
+<!-- Color Palette Section -->
+<section>
+<div class="mb-8 border-b border-slate-200 dark:border-slate-800 pb-4">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">01. Brand Colors</h2>
+<p class="text-slate-500 dark:text-slate-400">Core palette defining the visual identity of Chandigarh University Campus Guide.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Primary Color -->
+<div class="group">
+<div class="h-40 rounded-lg bg-primary shadow-lg flex items-center justify-center mb-4 transition-transform group-hover:scale-[1.02]">
+<span class="text-white/90 font-medium">Deep Blue</span>
+</div>
+<div class="px-2">
+<p class="font-bold text-slate-900 dark:text-white">Primary</p>
+<p class="text-sm text-slate-500 font-mono">#1e3b8a</p>
+<p class="text-xs text-slate-400 mt-1">Main actions, headers, active states</p>
+</div>
+</div>
+<!-- Accent Color -->
+<div class="group">
+<div class="h-40 rounded-lg bg-accent shadow-lg flex items-center justify-center mb-4 transition-transform group-hover:scale-[1.02]">
+<span class="text-white/90 font-medium">Soft Orange</span>
+</div>
+<div class="px-2">
+<p class="font-bold text-slate-900 dark:text-white">Accent</p>
+<p class="text-sm text-slate-500 font-mono">#f97316</p>
+<p class="text-xs text-slate-400 mt-1">Notifications, badges, highlights</p>
+</div>
+</div>
+<!-- Surface Light -->
+<div class="group">
+<div class="h-40 rounded-lg bg-background-light border border-slate-200 shadow-sm flex items-center justify-center mb-4 transition-transform group-hover:scale-[1.02]">
+<span class="text-slate-500 font-medium">Light Gray</span>
+</div>
+<div class="px-2">
+<p class="font-bold text-slate-900 dark:text-white">Background</p>
+<p class="text-sm text-slate-500 font-mono">#f6f6f8</p>
+<p class="text-xs text-slate-400 mt-1">Page background, airy spacing</p>
+</div>
+</div>
+<!-- Dark Mode Surface -->
+<div class="group">
+<div class="h-40 rounded-lg bg-background-dark shadow-lg flex items-center justify-center mb-4 transition-transform group-hover:scale-[1.02]">
+<span class="text-slate-400 font-medium">Dark Slate</span>
+</div>
+<div class="px-2">
+<p class="font-bold text-slate-900 dark:text-white">Dark Surface</p>
+<p class="text-sm text-slate-500 font-mono">#121620</p>
+<p class="text-xs text-slate-400 mt-1">Dark mode backgrounds</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Typography Section -->
+<section>
+<div class="mb-8 border-b border-slate-200 dark:border-slate-800 pb-4">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">02. Typography</h2>
+<p class="text-slate-500 dark:text-slate-400">Inter font family. Clean, modern, and highly legible for academic context.</p>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-8 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="space-y-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-baseline border-b border-slate-100 dark:border-slate-800 pb-6">
+<span class="text-slate-400 text-sm font-mono col-span-1">Display Large / Bold / 48px</span>
+<h1 class="text-5xl font-bold text-slate-900 dark:text-white col-span-2 tracking-tight">Smart Campus</h1>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-baseline border-b border-slate-100 dark:border-slate-800 pb-6">
+<span class="text-slate-400 text-sm font-mono col-span-1">Heading 1 / Semibold / 36px</span>
+<h1 class="text-4xl font-semibold text-slate-900 dark:text-white col-span-2 tracking-tight">Explore Facilities</h1>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-baseline border-b border-slate-100 dark:border-slate-800 pb-6">
+<span class="text-slate-400 text-sm font-mono col-span-1">Heading 2 / Medium / 24px</span>
+<h2 class="text-2xl font-medium text-slate-900 dark:text-white col-span-2">Engineering Block B</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-baseline border-b border-slate-100 dark:border-slate-800 pb-6">
+<span class="text-slate-400 text-sm font-mono col-span-1">Body / Regular / 16px</span>
+<p class="text-base text-slate-600 dark:text-slate-300 col-span-2 leading-relaxed">
+                            Navigate through the campus with ease. Find the nearest libraries, food courts, and academic blocks using our interactive map system.
+                        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-baseline">
+<span class="text-slate-400 text-sm font-mono col-span-1">Caption / Medium / 14px</span>
+<p class="text-sm font-medium text-primary dark:text-blue-300 col-span-2 uppercase tracking-wide">
+                            Navigation Active
+                        </p>
+</div>
+</div>
+</div>
+</section>
+<!-- UI Components Section -->
+<section>
+<div class="mb-8 border-b border-slate-200 dark:border-slate-800 pb-4">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">03. UI Components</h2>
+<p class="text-slate-500 dark:text-slate-400">Interactive elements including buttons, pills, cards, and navigation aids.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Buttons & Pills -->
+<div class="space-y-8">
+<div>
+<h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Buttons &amp; Pills</h3>
+<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-lg border border-slate-200 dark:border-slate-800 flex flex-wrap gap-4 items-center">
+<!-- Primary Button -->
+<button class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-full font-medium shadow-md shadow-primary/20 transition-all active:scale-95">
+                                Start Navigation
+                            </button>
+<!-- Secondary/Outline Button -->
+<button class="bg-transparent border-2 border-primary text-primary hover:bg-primary/5 px-6 py-3 rounded-full font-medium transition-all dark:text-blue-300 dark:border-blue-300 dark:hover:bg-blue-300/10">
+                                View Details
+                            </button>
+<!-- Disabled Button -->
+<button class="bg-slate-200 text-slate-400 px-6 py-3 rounded-full font-medium cursor-not-allowed dark:bg-slate-800 dark:text-slate-600">
+                                Offline
+                            </button>
+</div>
+</div>
+<div>
+<h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Filter Pills</h3>
+<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-lg border border-slate-200 dark:border-slate-800 flex flex-wrap gap-3">
+<!-- Active Pill -->
+<button class="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium shadow-sm transition-transform hover:-translate-y-0.5">
+                                All Places
+                            </button>
+<!-- Inactive Pills -->
+<button class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-full text-sm font-medium hover:border-primary hover:text-primary transition-colors">
+                                Academic
+                            </button>
+<button class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-full text-sm font-medium hover:border-primary hover:text-primary transition-colors">
+                                Libraries
+                            </button>
+<button class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-full text-sm font-medium hover:border-primary hover:text-primary transition-colors">
+                                Food Court
+                            </button>
+</div>
+</div>
+<div>
+<h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Search Input</h3>
+<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-lg border border-slate-200 dark:border-slate-800">
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+<span class="material-icons-round">search</span>
+</span>
+<input class="w-full py-3 pl-12 pr-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary placeholder-slate-400 transition-all" placeholder="Search for buildings, labs, or cafes..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Cards & Widgets -->
+<div class="space-y-8">
+<div>
+<h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Category Icons</h3>
+<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-lg border border-slate-200 dark:border-slate-800 flex gap-6 justify-center">
+<!-- Category Item -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center transition-all group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/30">
+<span class="material-icons-round">restaurant_menu</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary dark:group-hover:text-blue-300 transition-colors">Food</span>
+</div>
+<!-- Category Item -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center transition-all group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/30">
+<span class="material-icons-round">menu_book</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary dark:group-hover:text-blue-300 transition-colors">Library</span>
+</div>
+<!-- Category Item -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center transition-all group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/30">
+<span class="material-icons-round">domain</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary dark:group-hover:text-blue-300 transition-colors">Blocks</span>
+</div>
+<!-- Category Item -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center transition-all group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/30">
+<span class="material-icons-round">sports_soccer</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary dark:group-hover:text-blue-300 transition-colors">Grounds</span>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Place Card</h3>
+<!-- Place Card Component -->
+<div class="w-full max-w-sm mx-auto bg-surface-light dark:bg-surface-dark rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 dark:border-slate-800 group">
+<div class="relative h-48 overflow-hidden">
+<img alt="Modern university building with glass facade" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Modern university building with glass facade" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuijH_hSCAw_qkaSoJGcAz2HeuGvHFrFSY-EEtV88D1UJYaEFaPKbxNOhc3B2qFlpYKJt5m9aYxNhrcnd32KFItF6J8oRUKw5nBNkUyqIwq-o7AmvPe9s10ugL2zeZ-DbPUMbBjLeQsQeOCI82U_-wl3wmKcxwqLJ5rq8fm-JztNLjZX22L61HY3_eABF1WBdmVzQ0rNzf9hOslcUh60bh6usia_YGLZZQMhBBdYYNErNxgyKAvLhKp6-lC_qHjJW9Pd2GsfMAK0jT"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-primary dark:text-blue-300 flex items-center gap-1 shadow-sm">
+<span class="material-icons-round text-sm">near_me</span>
+                                    250m
+                                </div>
+<div class="absolute top-3 left-3 bg-accent text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                                    Open Now
+                                </div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white">Central Library</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400">Academic Block 3</p>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center text-primary dark:text-blue-300">
+<span class="material-icons-round text-base">bookmark_border</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-yellow-500 mb-4">
+<span class="material-icons-round text-sm">star</span>
+<span class="material-icons-round text-sm">star</span>
+<span class="material-icons-round text-sm">star</span>
+<span class="material-icons-round text-sm">star</span>
+<span class="material-icons-round text-sm text-slate-300">star</span>
+<span class="text-xs text-slate-400 ml-1">(4.2)</span>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-full font-medium flex items-center justify-center gap-2 transition-colors group-hover:bg-primary/100">
+<span class="material-icons-round text-sm">directions</span>
+                                    Navigate
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Loading State Section -->
+<section class="pb-20">
+<div class="mb-8 border-b border-slate-200 dark:border-slate-800 pb-4">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">04. States &amp; Feedback</h2>
+<p class="text-slate-500 dark:text-slate-400">Visual feedback for loading processes and system status.</p>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-12 rounded-lg border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center space-y-6">
+<!-- Custom Spinner -->
+<div class="relative w-16 h-16">
+<div class="absolute inset-0 border-4 border-slate-200 dark:border-slate-700 rounded-full"></div>
+<div class="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-icons-round text-primary animate-pulse">place</span>
+</div>
+</div>
+<div class="text-center">
+<h3 class="text-lg font-medium text-slate-900 dark:text-white">Detecting Location...</h3>
+<p class="text-sm text-slate-500">Please wait while we fetch your coordinates.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary py-12 text-white">
+<div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm">
+<span class="material-icons-round text-white">school</span>
+</div>
+<div>
+<h4 class="font-bold text-lg">CU Campus Guide</h4>
+<p class="text-white/60 text-xs">Chandigarh University</p>
+</div>
+</div>
+<div class="flex gap-8 text-sm text-white/80">
+<a class="hover:text-white transition-colors" href="#">Documentation</a>
+<a class="hover:text-white transition-colors" href="#">Components</a>
+<a class="hover:text-white transition-colors" href="#">Support</a>
+</div>
+<p class="text-white/40 text-xs">© 2023 CU Design Team. Internal Use Only.</p>
+</div>
+</footer>
+</body></html>

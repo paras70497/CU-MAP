@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CU Campus Guide - Mobile View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1e3b8a",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121620",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        .map-texture {
+             background-color: #e5e7eb;
+             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239ca3af' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .dark .map-texture {
+             background-color: #1f2937;
+             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234b5563' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-white min-h-screen flex items-center justify-center p-4">
+<!-- Mobile Device Simulator Container -->
+<main class="w-full max-w-[420px] h-[850px] bg-white dark:bg-[#1A202C] rounded-[3rem] shadow-2xl overflow-hidden relative border-8 border-white dark:border-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 flex flex-col">
+<!-- Status Bar Fake -->
+<div class="h-6 w-full absolute top-0 z-50 flex justify-between items-center px-6 pt-3 text-xs font-medium text-gray-900 dark:text-white pointer-events-none">
+<span>9:41</span>
+<div class="flex gap-1.5 items-center">
+<span class="material-icons text-sm">signal_cellular_alt</span>
+<span class="material-icons text-sm">wifi</span>
+<span class="material-icons text-sm">battery_full</span>
+</div>
+</div>
+<!-- Sticky Header -->
+<header class="pt-10 pb-4 px-6 bg-white/90 dark:bg-[#1A202C]/90 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100 dark:border-gray-800">
+<div class="flex justify-between items-center mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-md shadow-primary/30">
+<span class="material-icons text-xl">school</span>
+</div>
+<div>
+<h1 class="text-lg font-bold text-gray-900 dark:text-white leading-tight">CU Guide</h1>
+<p class="text-xs text-gray-500 dark:text-gray-400">Gharuan Campus</p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full bg-background-light dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-icons">dark_mode</span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-icons text-xl">search</span>
+<input class="w-full bg-background-light dark:bg-gray-800 border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 dark:text-white placeholder-gray-400" placeholder="Search buildings, food, etc..." type="text"/>
+</div>
+<!-- Horizontal Filters -->
+<div class="flex gap-3 overflow-x-auto no-scrollbar mt-4 pb-1">
+<button class="flex-none px-5 py-2 rounded-full bg-primary text-white text-sm font-medium shadow-lg shadow-primary/25">
+                    All
+                </button>
+<button class="flex-none px-5 py-2 rounded-full bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    Academics
+                </button>
+<button class="flex-none px-5 py-2 rounded-full bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+<span class="flex items-center gap-1"><span class="material-icons text-base">restaurant</span> Food</span>
+</button>
+<button class="flex-none px-5 py-2 rounded-full bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    Hostels
+                </button>
+<button class="flex-none px-5 py-2 rounded-full bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    Library
+                </button>
+</div>
+</header>
+<!-- Main Content Area: Map & List -->
+<div class="flex-1 relative overflow-hidden flex flex-col">
+<!-- Map View -->
+<div class="flex-1 relative map-texture w-full h-full">
+<!-- Map Background Image Placeholder -->
+<div class="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=1000&amp;q=80')] bg-cover bg-center grayscale mix-blend-multiply" data-alt="Abstract aerial map view of university campus roads and greenery"></div>
+<!-- Custom Map Elements -->
+<!-- User Location Pin -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+<div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center animate-pulse">
+<div class="w-4 h-4 bg-primary border-2 border-white dark:border-gray-900 rounded-full shadow-sm"></div>
+</div>
+</div>
+<!-- Map Marker 1: Food Court -->
+<div class="absolute top-1/3 left-1/4 transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer">
+<div class="bg-white dark:bg-gray-800 p-1.5 rounded-xl shadow-lg transform transition-transform group-hover:scale-110">
+<div class="bg-orange-100 dark:bg-orange-900/30 w-8 h-8 rounded-lg flex items-center justify-center text-orange-600 dark:text-orange-400">
+<span class="material-icons text-sm">restaurant</span>
+</div>
+</div>
+<div class="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white dark:bg-gray-800 px-2 py-1 rounded text-[10px] font-bold shadow-md whitespace-nowrap hidden group-hover:block text-gray-800 dark:text-white">
+                        Main Café
+                    </div>
+</div>
+<!-- Map Marker 2: Library -->
+<div class="absolute bottom-1/3 right-1/4 transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer">
+<div class="bg-primary p-1.5 rounded-xl shadow-lg transform transition-transform group-hover:scale-110 ring-2 ring-white dark:ring-gray-800">
+<div class="bg-white/20 w-8 h-8 rounded-lg flex items-center justify-center text-white">
+<span class="material-icons text-sm">menu_book</span>
+</div>
+</div>
+<div class="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white dark:bg-gray-800 px-2 py-1 rounded text-[10px] font-bold shadow-md whitespace-nowrap text-gray-800 dark:text-white">
+                        Central Library
+                    </div>
+</div>
+<!-- Map Marker 3: Admin Block -->
+<div class="absolute top-20 right-10 transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer">
+<div class="bg-white dark:bg-gray-800 p-1.5 rounded-xl shadow-lg transform transition-transform group-hover:scale-110">
+<div class="bg-blue-100 dark:bg-blue-900/30 w-8 h-8 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
+<span class="material-icons text-sm">domain</span>
+</div>
+</div>
+</div>
+<!-- Recenter Button -->
+<button class="absolute bottom-4 right-4 bg-white dark:bg-gray-800 w-12 h-12 rounded-full shadow-lg shadow-black/10 flex items-center justify-center text-primary z-10 hover:bg-gray-50 dark:hover:bg-gray-700 active:scale-95 transition-all">
+<span class="material-icons">my_location</span>
+</button>
+</div>
+<!-- Bottom Sheet / Nearby Places -->
+<div class="bg-white dark:bg-[#1A202C] rounded-t-lg shadow-[0_-8px_30px_rgba(0,0,0,0.12)] border-t border-gray-100 dark:border-gray-800 relative z-20 flex flex-col max-h-[45%] h-[45%]">
+<!-- Drag Handle -->
+<div class="w-full flex justify-center pt-3 pb-1">
+<div class="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+</div>
+<!-- Section Header -->
+<div class="px-6 pb-2 pt-2 flex justify-between items-end">
+<h2 class="text-xl font-bold text-gray-900 dark:text-white">Nearby Places</h2>
+<a class="text-sm font-medium text-primary hover:text-blue-700 mb-1" href="#">See All</a>
+</div>
+<!-- Scrollable List -->
+<div class="flex-1 overflow-y-auto px-4 pb-6 no-scrollbar space-y-3 mt-2">
+<!-- Card 1: Library -->
+<div class="bg-background-light dark:bg-gray-800 p-4 rounded-xl flex items-center gap-4 group cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors border border-transparent hover:border-primary/10">
+<div class="relative w-16 h-16 flex-none">
+<img alt="Library interior with bookshelves" class="w-full h-full object-cover rounded-lg" data-alt="Modern library interior with bookshelves" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFwBWWJQ_GTGqf7qS9O1f_FjnyJcJvNGkEQp30mu3KpkYkHlgu024EFxZR_zUc9bXtOAdgIiznTGSFOO9nCzHK0MIUP7caWMNWxfO1OWqCWlm4uYVwY8c3wSU-ITZvwIgeWhOR5jAo9itsIieSX9yVNd3d5WaNZL41KGyDZ1YpFqoq5IVEoE38USP8moc3--5Jpsk_W2cHNRwwIojnAHE6MdQQiRedy1zhIvUgZQJkK1Gcuz-I3WkxkYfoBwJaW7L2NbneltypUNdn"/>
+<div class="absolute -bottom-1 -right-1 bg-white dark:bg-gray-900 rounded-full p-1">
+<div class="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-full w-5 h-5 flex items-center justify-center">
+<span class="material-icons text-[10px]">check</span>
+</div>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-gray-900 dark:text-white truncate">Central Library</h3>
+<span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">150m</span>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">Academic Block 3 • Open until 8 PM</p>
+<div class="flex items-center gap-1 mt-2 text-xs font-medium text-gray-400">
+<span class="material-icons text-[14px]">schedule</span>
+<span class="text-green-600 dark:text-green-400">Open Now</span>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 shadow-sm border border-gray-100 dark:border-gray-600 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-icons text-xl">directions</span>
+</button>
+</div>
+<!-- Card 2: Food Court -->
+<div class="bg-background-light dark:bg-gray-800 p-4 rounded-xl flex items-center gap-4 group cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors border border-transparent hover:border-primary/10">
+<div class="relative w-16 h-16 flex-none">
+<img alt="Pancakes with syrup and blueberries" class="w-full h-full object-cover rounded-lg" data-alt="Close up of food dish representing cafeteria" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPnUNMjJEDCL7ECdB21mg5qgeUvmFyiKzMoZVxG550Tc-oDonLS9jXXt275vo-Q69pcBK4FEUquA04VNBPWLgikVmjnQqftr9Fa0VpkztcaOeYQLLnitPP96XeaS9kb3quV_q9K6hzJpfaCYUX1PJ2vac6mgpB6B9PIfZUg6xAp_zWa_YmGSrj8dWzW6pfqp1AKw8tWFpLuWhUTVy7hXWzoQnOBfc4kxcFSV2MGVZZ9aUU2JIBDbqTnZkubuxT63lhIov3YNinnXS6"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-gray-900 dark:text-white truncate">Student Center Café</h3>
+<span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">320m</span>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">Block C • Snacks &amp; Coffee</p>
+<div class="flex items-center gap-1 mt-2 text-xs font-medium text-gray-400">
+<span class="material-icons text-[14px]">schedule</span>
+<span class="text-orange-500">Closing Soon</span>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 shadow-sm border border-gray-100 dark:border-gray-600 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-icons text-xl">directions</span>
+</button>
+</div>
+<!-- Card 3: Admin Block -->
+<div class="bg-background-light dark:bg-gray-800 p-4 rounded-xl flex items-center gap-4 group cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors border border-transparent hover:border-primary/10">
+<div class="relative w-16 h-16 flex-none">
+<img alt="Modern office building interior" class="w-full h-full object-cover rounded-lg" data-alt="Clean corporate office building corridor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOMtbqbkva9cJhWCBuJSDvXsO0cH3nIIrSbHFfoEKNbl43AV4KfQg0fT21FOjJKLYCzDLX9JBTGTa8nq43VvCp_jaLqOztWHCNdYtStBVAlV7S8YbjABMyg03gDMYoHhqm5QuEJr-cuk3HKQOHJuNsND8SN2tyDXZV6hrlVy_RHOFcEb0Dk6k7ho3h4BPqX9d3u-Jxfiyq1DzJs089WsEEpY-QpR_B6ybqPiy4kyUI2lUsGeQZtEn_j0UeqfN8wYwFWQc22M70NBT7"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-gray-900 dark:text-white truncate">Admission Cell</h3>
+<span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">500m</span>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">Main Block • Ground Floor</p>
+<div class="flex items-center gap-1 mt-2 text-xs font-medium text-gray-400">
+<span class="material-icons text-[14px]">schedule</span>
+<span class="text-red-500">Closed</span>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 shadow-sm border border-gray-100 dark:border-gray-600 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-icons text-xl">directions</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="bg-white dark:bg-[#1A202C] border-t border-gray-100 dark:border-gray-800 px-6 pb-6 pt-2 flex justify-between items-center z-50">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-icons text-2xl">map</span>
+<span class="text-[10px] font-medium">Explore</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors">
+<span class="material-icons text-2xl">near_me</span>
+<span class="text-[10px] font-medium">Navigate</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors">
+<span class="material-icons text-2xl">bookmark</span>
+<span class="text-[10px] font-medium">Saved</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors">
+<span class="material-icons text-2xl">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</div>
+<!-- Home Indicator Fake -->
+<div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-gray-300 dark:bg-gray-600 rounded-full z-[60]"></div>
+</main>
+<!-- Desktop Background Decorative Elements -->
+<div class="fixed top-0 left-0 w-full h-full -z-10 bg-background-light dark:bg-background-dark overflow-hidden pointer-events-none">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[100px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]"></div>
+</div>
+</body></html>
