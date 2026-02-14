@@ -51,3 +51,27 @@
         transform: scale(0.85);
     }
 }
+
+/* Bottom sheet handle grab cursor */
+#sheet-handle {
+    cursor: grab;
+    -webkit-user-select: none;
+    user-select: none;
+}
+#sheet-handle:active {
+    cursor: grabbing;
+}
+
+/* Nav tab active indicator dot */
+.nav-tab.text-primary::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #1e3b8a;
+    margin-top: 2px;
+}
+.dark .nav-tab.dark\:text-blue-400::after {
+    background: #60a5fa;
+}

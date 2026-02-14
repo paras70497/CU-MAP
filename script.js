@@ -33,6 +33,8 @@ let userPosition     = null;      // { lat, lng } of the user
 let activeCategory   = "all";     // Current filter
 let infoWindow;                   // Shared InfoWindow
 let isMobile         = window.innerWidth < 768; // responsive check
+let savedPlaces      = JSON.parse(localStorage.getItem("cu_saved") || "[]"); // saved bookmarks
+let activeTab        = "explore"; // current mobile tab
 
 // ──────────────────────────────────────────────
 // 3. Initialise the Map (Google Maps callback)
@@ -83,6 +85,9 @@ function initMap() {
 
   // Track viewport changes
   window.addEventListener("resize", () => { isMobile = window.innerWidth < 768; });
+
+  // Initialise bottom‑sheet drag & tab switching
+  initBottomSheetDrag();
 }
 
 // ──────────────────────────────────────────────
@@ -307,6 +312,9 @@ function buildDesktopCard(loc) {
 
 function buildMobileCard(loc) {
   const distLabel = loc.dist != null ? `${(loc.dist * 1000).toFixed(0)}m` : "—";
+  const saved = isSaved(loc.name);
+  const heartIcon = saved ? "favorite" : "favorite_border";
+  const heartColor = saved ? "text-rose-500" : "text-slate-300 dark:text-slate-600";
 
   const config = {
     food:    { icon: "lunch_dining", bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-600 dark:text-orange-400" },
@@ -316,24 +324,26 @@ function buildMobileCard(loc) {
     default: { icon: "place",        bg: "bg-slate-100 dark:bg-slate-700",      text: "text-slate-600 dark:text-slate-400" }
   };
   const style = config[loc.category] || config.default;
+  const safeName = loc.name.replace(/'/g, "\\'");
 
   return `
-    <div class="rec-item group bg-white dark:bg-slate-800 p-4 rounded-lg shadow-soft border border-slate-100 dark:border-slate-700/50 flex items-center justify-between hover:border-primary/30 transition-all cursor-pointer"
+    <div class="rec-item group bg-white dark:bg-slate-800 p-4 rounded-xl shadow-soft border border-slate-100 dark:border-slate-700/50 flex items-center justify-between hover:border-primary/30 transition-all cursor-pointer"
          data-lat="${loc.lat}" data-lng="${loc.lng}">
-      <div class="flex items-center gap-4">
-        <div class="h-12 w-12 rounded-full ${style.bg} ${style.text} flex items-center justify-center">
-          <span class="material-icons">${style.icon}</span>
+      <div class="flex items-center gap-3">
+        <div class="h-11 w-11 rounded-full ${style.bg} ${style.text} flex items-center justify-center flex-shrink-0">
+          <span class="material-icons text-xl">${style.icon}</span>
         </div>
-        <div>
-          <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">${loc.name}</h3>
-          <div class="flex items-center gap-1 mt-0.5">
-            <span class="text-xs text-slate-400 capitalize">${loc.category}</span>
-          </div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm truncate">${loc.name}</h3>
+          <span class="text-xs text-slate-400 capitalize">${loc.category}</span>
         </div>
       </div>
-      <div class="flex flex-col items-end gap-2">
-        <span class="text-xs font-bold text-primary dark:text-blue-300 bg-primary/10 dark:bg-blue-900/30 px-2 py-1 rounded-full">${distLabel}</span>
-        <button class="h-8 w-8 rounded-full bg-slate-50 dark:bg-slate-700 hover:bg-primary hover:text-white dark:hover:bg-primary flex items-center justify-center transition-colors text-slate-400">
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <span class="text-xs font-bold text-primary dark:text-blue-300 bg-primary/10 dark:bg-blue-900/30 px-2.5 py-1 rounded-full">${distLabel}</span>
+        <button class="save-btn h-8 w-8 rounded-full flex items-center justify-center transition-colors ${heartColor}" onclick="event.stopPropagation(); toggleSave('${safeName}')">
+          <span class="material-icons text-lg">${heartIcon}</span>
+        </button>
+        <button class="h-8 w-8 rounded-full bg-slate-50 dark:bg-slate-700 hover:bg-primary hover:text-white dark:hover:bg-primary flex items-center justify-center transition-colors text-slate-400" onclick="event.stopPropagation();">
           <span class="material-icons text-sm">near_me</span>
         </button>
       </div>
@@ -388,4 +398,176 @@ function initFilterButtons() {
       updateRecommendations();
     });
   });
+}
+
+// ──────────────────────────────────────────────
+// 9. Bottom Sheet Drag Gesture
+// ──────────────────────────────────────────────
+
+function initBottomSheetDrag() {
+  const sheet  = document.getElementById("mobile-sheet");
+  const handle = document.getElementById("sheet-handle");
+  if (!sheet || !handle) return;
+
+  const NAV_HEIGHT = 56;                   // bottom nav bar height
+  const SNAP_COLLAPSED = 0.12;             // 12% — just the handle visible
+  const SNAP_HALF      = 0.36;             // 36% — default half-open
+  const SNAP_FULL      = 0.85;             // 85% — fully expanded
+
+  let startY = 0;
+  let startH = 0;
+  let dragging = false;
+  let parentH  = 0;
+
+  function setHeight(frac) {
+    sheet.style.height = `${Math.round(frac * 100)}%`;
+  }
+
+  // TOUCH events
+  handle.addEventListener("touchstart", (e) => {
+    dragging = true;
+    startY   = e.touches[0].clientY;
+    parentH  = sheet.parentElement.getBoundingClientRect().height;
+    startH   = sheet.getBoundingClientRect().height / parentH;
+    sheet.style.transition = "none";
+  }, { passive: true });
+
+  handle.addEventListener("touchmove", (e) => {
+    if (!dragging) return;
+    const dy    = startY - e.touches[0].clientY;
+    const delta = dy / parentH;
+    let newH    = Math.min(SNAP_FULL, Math.max(SNAP_COLLAPSED, startH + delta));
+    setHeight(newH);
+  }, { passive: true });
+
+  handle.addEventListener("touchend", (e) => {
+    if (!dragging) return;
+    dragging = false;
+    sheet.style.transition = "height 0.3s ease-out";
+    // Snap to nearest breakpoint
+    const curH = sheet.getBoundingClientRect().height / parentH;
+    const snaps = [SNAP_COLLAPSED, SNAP_HALF, SNAP_FULL];
+    const closest = snaps.reduce((a, b) => Math.abs(b - curH) < Math.abs(a - curH) ? b : a);
+    setHeight(closest);
+  });
+
+  // MOUSE events (for desktop testing in responsive mode)
+  handle.addEventListener("mousedown", (e) => {
+    dragging = true;
+    startY   = e.clientY;
+    parentH  = sheet.parentElement.getBoundingClientRect().height;
+    startH   = sheet.getBoundingClientRect().height / parentH;
+    sheet.style.transition = "none";
+    e.preventDefault();
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+    const dy    = startY - e.clientY;
+    const delta = dy / parentH;
+    let newH    = Math.min(SNAP_FULL, Math.max(SNAP_COLLAPSED, startH + delta));
+    setHeight(newH);
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (!dragging) return;
+    dragging = false;
+    sheet.style.transition = "height 0.3s ease-out";
+    const curH = sheet.getBoundingClientRect().height / parentH;
+    const snaps = [SNAP_COLLAPSED, SNAP_HALF, SNAP_FULL];
+    const closest = snaps.reduce((a, b) => Math.abs(b - curH) < Math.abs(a - curH) ? b : a);
+    setHeight(closest);
+  });
+}
+
+// ──────────────────────────────────────────────
+// 10. Tab Switching (Mobile Bottom Nav)
+// ──────────────────────────────────────────────
+
+function switchTab(tab) {
+  activeTab = tab;
+
+  // Toggle tab panels
+  const tabs = ["explore", "saved", "alerts", "profile"];
+  tabs.forEach((t) => {
+    const el = document.getElementById(`tab-${t}`);
+    if (el) el.classList.toggle("hidden", t !== tab);
+  });
+
+  // Toggle nav‑button active styling
+  document.querySelectorAll("#bottom-nav .nav-tab").forEach((btn) => {
+    const isActive = btn.dataset.tab === tab;
+    btn.classList.toggle("text-primary", isActive);
+    btn.classList.toggle("dark:text-blue-400", isActive);
+    btn.classList.toggle("text-slate-500", !isActive);
+    btn.classList.toggle("dark:text-slate-400", !isActive);
+  });
+
+  // Show/hide mobile filters (only in explore tab)
+  const filterBar = document.querySelector(".md\\:hidden.absolute.top-\\[68px\\]");
+  if (filterBar) filterBar.style.display = tab === "explore" ? "" : "none";
+
+  // Show/hide locate FAB (only in explore tab)
+  const locBtn = document.getElementById("locate-btn");
+  if (locBtn) locBtn.style.display = tab === "explore" ? "" : "none";
+
+  // When switching to Saved tab, rebuild the saved list
+  if (tab === "saved") renderSavedList();
+
+  // Ensure sheet is at least half-open when switching tabs
+  const sheet = document.getElementById("mobile-sheet");
+  if (sheet) {
+    const parentH = sheet.parentElement.getBoundingClientRect().height;
+    const curFrac = sheet.getBoundingClientRect().height / parentH;
+    if (curFrac < 0.30) {
+      sheet.style.transition = "height 0.3s ease-out";
+      sheet.style.height = "36%";
+    }
+  }
+}
+
+// ──────────────────────────────────────────────
+// 11. Saved Places
+// ──────────────────────────────────────────────
+
+function isSaved(locName) {
+  return savedPlaces.includes(locName);
+}
+
+function toggleSave(locName) {
+  if (isSaved(locName)) {
+    savedPlaces = savedPlaces.filter((n) => n !== locName);
+  } else {
+    savedPlaces.push(locName);
+  }
+  localStorage.setItem("cu_saved", JSON.stringify(savedPlaces));
+  // Refresh both lists so heart icons update
+  updateRecommendations();
+  if (activeTab === "saved") renderSavedList();
+}
+
+function renderSavedList() {
+  const listEl = document.getElementById("saved-list");
+  if (!listEl) return;
+
+  const savedLocs = campusLocations
+    .filter((l) => isSaved(l.name))
+    .map((l) => (userPosition ? { ...l, dist: haversineDistance(userPosition, l) } : l));
+
+  const emptyHTML = `
+    <div id="saved-empty" class="flex flex-col items-center justify-center py-10 text-center">
+      <div class="h-16 w-16 rounded-full bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center mb-4">
+        <span class="material-icons text-3xl text-rose-400">favorite</span>
+      </div>
+      <h3 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">No saved places yet</h3>
+      <p class="text-xs text-slate-400 max-w-[200px]">Tap the heart icon on any location card to save it here for quick access.</p>
+    </div>`;
+
+  if (savedLocs.length === 0) {
+    listEl.innerHTML = emptyHTML;
+    return;
+  }
+
+  listEl.innerHTML = savedLocs.map(buildMobileCard).join("");
+  addListClickListeners(listEl);
 }
