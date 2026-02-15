@@ -6,25 +6,17 @@
 // 1. Predefined Campus Locations
 // ──────────────────────────────────────────────
 const campusLocations = [
-  // ── Food ──
-  { name: "PFC Food Court",          lat: 30.7715064, lng: 76.5694492, category: "food"    },
-  { name: "Food Republic",           lat: 30.7668459, lng: 76.5760314, category: "food"    },
-  { name: "The Corner Cafe",         lat: 30.7691371, lng: 76.5763082, category: "food"    },
-  { name: "Urban Cafe",              lat: 30.772447,  lng: 76.5748641, category: "food"    },
-  // ── Library ──
-  { name: "Central Library",         lat: 30.7701683, lng: 76.5755912, category: "library" },
-  { name: "DD1 Block Library",       lat: 30.7735722, lng: 76.5695049, category: "library" },
-  // ── Block ──
-  { name: "Block A1",                lat: 30.7716488, lng: 76.5782589, category: "block"   },
-  { name: "Block B2",                lat: 30.7691341, lng: 76.5758641, category: "block"   },
-  { name: "Block D5",                lat: 30.7709588, lng: 76.5697969, category: "block"   },
-  { name: "Block 17",                lat: 30.7735523, lng: 76.5708688, category: "block"   },
-  { name: "South Campus",            lat: 30.7708668, lng: 76.5703153, category: "block"   },
-  // ── Ground ──
-  { name: "CU Main Ground",          lat: 30.7670957, lng: 76.5753727, category: "ground"  },
-  { name: "Main Sports Ground",      lat: 30.768908,  lng: 76.5687556, category: "ground"  },
-  { name: "CU Cricket Ground",       lat: 30.7669867, lng: 76.5740000, category: "ground"  },
-  { name: "Basketball Court",        lat: 30.7685000, lng: 76.5700000, category: "ground"  },
+  { name: "Gate 2", lat: 30.772451081315833, lng: 76.57647705561754, category: "Gate" },
+  { name: "Zakir D", lat: 30.76336833296375, lng: 76.5718609212302, category: "block" },
+  { name: "Zakir C", lat: 30.763407570344732, lng: 76.57276276000356, category: "block" },
+  { name: "Zakir A", lat: 30.764090017964826, lng: 76.57288017843622, category: "block" },
+  { name: "Zakir B", lat: 30.764342187589282, lng: 76.5715891620593, category: "block" },
+  { name: "NC 1", lat: 30.763932577470612, lng: 76.57511422694532, category: "block" },
+  { name: "NC 2", lat: 30.764545756078483, lng: 76.57504183311178, category: "block" },
+  { name: "CU Main Ground", lat: 30.767068995684838, lng: 76.57535861090817, category: "ground" },
+  { name: "Academic Block C2", lat: 30.766098509935137, lng: 76.57603170518053, category: "block" },
+  { name: "CU South Campus", lat: 30.77090941640967, lng: 76.57030682848189, category: "block" },
+  { name: "D6 Library", lat: 30.7715451465999, lng: 76.56920396626894, category: "library" },
 ];
 
 // ──────────────────────────────────────────────
@@ -44,20 +36,135 @@ let activeTab        = "explore"; // current mobile tab
 // 3. Initialise the Map (Google Maps callback)
 // ──────────────────────────────────────────────
 function initMap() {
-  // CU campus center coordinates (actual campus midpoint)
-  const cuCenter = { lat: 30.7700, lng: 76.5730 };
+  // 1. Define Boundaries (Original + Buffer)
+  const originalBounds = {
+    north: 30.77286829513368,
+    south: 30.762436860366208,
+    east: 76.57963196344475,
+    west: 76.56534274336919,
+  };
 
+  // Expanded bounds for camera restriction (prevents snapping at edges)
+  const restrictedBounds = {
+    north: originalBounds.north + 0.0005,
+    south: originalBounds.south - 0.0005,
+    east: originalBounds.east + 0.0005,
+    west: originalBounds.west - 0.0005,
+  };
+
+  // Center based on bounds
+  const cuCenter = {
+    lat: (originalBounds.north + originalBounds.south) / 2,
+    lng: (originalBounds.east + originalBounds.west) / 2,
+  };
+
+  // 2. Custom Map Styles (Modern, Muted, Campus Focus)
+  const mapStyles = [
+    {
+      featureType: "all",
+      elementType: "labels.text.fill",
+      stylers: [{ color: "#6c7b8b" }],
+    },
+    {
+      featureType: "all",
+      elementType: "labels.text.stroke",
+      stylers: [{ visibility: "off" }],
+    },
+    {
+      featureType: "administrative",
+      elementType: "geometry.fill",
+      stylers: [{ color: "#fefefe" }, { lightness: 20 }],
+    },
+    {
+      featureType: "administrative",
+      elementType: "geometry.stroke",
+      stylers: [{ color: "#fefefe" }, { lightness: 17 }, { weight: 1.2 }],
+    },
+    {
+      featureType: "landscape",
+      elementType: "geometry", // Campus grounds
+      stylers: [{ color: "#f5f5f5" }, { lightness: 20 }],
+    },
+    {
+      featureType: "poi", // Points of Interest
+      elementType: "geometry",
+      stylers: [{ color: "#eeeeee" }, { lightness: 21 }],
+    },
+    {
+      featureType: "poi",
+      elementType: "labels",
+      stylers: [{ visibility: "simplified" }, { lightness: 40 }], // Reduce clutter
+    },
+    {
+      featureType: "road.highway",
+      elementType: "geometry.fill",
+      stylers: [{ color: "#ffffff" }, { lightness: 17 }],
+    },
+    {
+      featureType: "road.highway",
+      elementType: "geometry.stroke",
+      stylers: [{ color: "#ffffff" }, { lightness: 29 }, { weight: 0.2 }],
+    },
+    {
+      featureType: "road.arterial",
+      elementType: "geometry",
+      stylers: [{ color: "#ffffff" }, { lightness: 18 }],
+    },
+    {
+      featureType: "road.local",
+      elementType: "geometry",
+      stylers: [{ color: "#ffffff" }, { lightness: 16 }],
+    },
+    {
+      featureType: "transit",
+      elementType: "geometry",
+      stylers: [{ color: "#f2f2f2" }, { lightness: 19 }],
+    },
+    {
+      featureType: "water",
+      elementType: "geometry",
+      stylers: [{ color: "#e9e9e9" }, { lightness: 17 }],
+    },
+  ];
+
+  // 3. Initialize Map with Restrictions & Controls
   map = new google.maps.Map(document.getElementById("map"), {
     center: cuCenter,
     zoom: 16,
-    mapTypeControl: true,
+    minZoom: 15,    // Lock inside campus
+    maxZoom: 20,    // High detail allowed
+    restriction: {
+      latLngBounds: restrictedBounds,
+      strictBounds: true,
+    },
+    mapTypeControl: true,  // Enabling satellite view option
     mapTypeControlOptions: {
       position: google.maps.ControlPosition.TOP_RIGHT,
     },
     streetViewControl: false,
-    styles: [
-      { featureType: "poi", stylers: [{ visibility: "simplified" }] },
-    ],
+    fullscreenControl: false,
+    zoomControl: true,
+    styles: mapStyles,
+  });
+
+  // 4. Draw Campus Boundary Polygon
+  const campusBoundaryCoords = [
+    { lat: originalBounds.north, lng: originalBounds.west },
+    { lat: originalBounds.north, lng: originalBounds.east },
+    { lat: originalBounds.south, lng: originalBounds.east },
+    { lat: originalBounds.south, lng: originalBounds.west },
+  ];
+
+  const campusPolygon = new google.maps.Polygon({
+    paths: campusBoundaryCoords,
+    strokeColor: "#1a237e", // Deep Blue
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: "#1a237e",
+    fillOpacity: 0.08,      // Very subtle tint
+    map: map,
+    clickable: false,       // Let clicks pass through to map
+    zIndex: -1,             // Ensure markers stay on top
   });
 
   infoWindow = new google.maps.InfoWindow();
@@ -79,8 +186,18 @@ function initMap() {
   if (locateBtn) {
     locateBtn.addEventListener("click", () => {
       if (userPosition) {
-        map.panTo(userPosition);
-        map.setZoom(17);
+        // Ensure user position is within bounds before panning
+        if (
+          userPosition.lat <= restrictedBounds.north &&
+          userPosition.lat >= restrictedBounds.south &&
+          userPosition.lng <= restrictedBounds.east &&
+          userPosition.lng >= restrictedBounds.west
+        ) {
+          map.panTo(userPosition);
+          map.setZoom(17);
+        } else {
+          alert("You are outside the campus boundary.");
+        }
       } else {
         requestUserLocation();
       }
@@ -402,6 +519,30 @@ function initFilterButtons() {
       updateRecommendations();
     });
   });
+
+  // Init Search Functionality
+  const searchInput = document.getElementById("search-input");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const matched = campusLocations.filter(loc => 
+        loc.name.toLowerCase().includes(query) || 
+        loc.category.toLowerCase().includes(query)
+      );
+      
+      // Update markers to show only matched results
+      placeMarkers(matched);
+      
+      // Update sidebar list
+      renderAllLocations(matched);
+
+      // If exactly one match, pan to it
+      if (matched.length === 1) {
+        map.panTo({ lat: matched[0].lat, lng: matched[0].lng });
+        map.setZoom(18);
+      }
+    });
+  }
 }
 
 // ──────────────────────────────────────────────
