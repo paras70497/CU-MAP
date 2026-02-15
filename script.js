@@ -28,6 +28,8 @@ let userMarker       = null;      // User's own location marker
 let userPosition     = null;      // { lat, lng } of the user
 let activeCategory   = "all";     // Current filter
 let infoWindow;                   // Shared InfoWindow
+let directionsService;            // Google Directions Service
+let directionsRenderer;           // Google Directions Renderer
 let isMobile         = window.innerWidth < 768; // responsive check
 let savedPlaces      = JSON.parse(localStorage.getItem("cu_saved") || "[]"); // saved bookmarks
 let activeTab        = "explore"; // current mobile tab
@@ -169,6 +171,18 @@ function initMap() {
 
   infoWindow = new google.maps.InfoWindow();
 
+  // Initialize Directions Service
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer({
+    map: map,
+    suppressMarkers: true, // We use our own markers
+    polylineOptions: {
+      strokeColor: "#3b82f6", // Blue path
+      strokeWeight: 5,
+      strokeOpacity: 0.8,
+    },
+  });
+
   // Place campus markers
   placeMarkers(campusLocations);
 
@@ -245,19 +259,59 @@ function placeMarkers(locations) {
       const distText = userPosition
         ? `📏 ${haversineDistance(userPosition, loc).toFixed(2)} km away`
         : "";
-      infoWindow.setContent(`
-        <div style="font-family:Inter,sans-serif;max-width:200px">
-          <strong>${loc.name}</strong><br/>
-          <span style="text-transform:capitalize;color:#555">${loc.category}</span><br/>
-          <span style="font-size:0.85em;color:#1a237e">${distText}</span>
+      
+      const contentString = `
+        <div style="font-family:Inter,sans-serif;max-width:220px">
+          <div style="margin-bottom:8px">
+            <strong style="font-size:1.1em;color:#1e293b">${loc.name}</strong><br/>
+            <span style="text-transform:capitalize;color:#64748b;font-size:0.9em">${loc.category}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+             <span style="font-size:0.85em;color:#3b82f6;font-weight:500">${distText}</span>
+             <button onclick="window.calcRouteTo(${loc.lat}, ${loc.lng})" 
+               style="background:#3b82f6;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.85em;font-weight:500">
+               Go ↗
+             </button>
+          </div>
         </div>
-      `);
+      `;
+      
+      infoWindow.setContent(contentString);
       infoWindow.open(map, marker);
     });
 
     markers.push(marker);
   });
 }
+
+/** Global function to calculate route from user location */
+window.calcRouteTo = function(lat, lng) {
+  if (!userPosition) {
+    alert("Please wait for your location to be detected or check permissions.");
+    requestUserLocation();
+    return;
+  }
+  
+  const request = {
+    origin: userPosition,
+    destination: { lat, lng },
+    travelMode: google.maps.TravelMode.WALKING,
+  };
+
+  directionsService.route(request, (result, status) => {
+    if (status === "OK") {
+      directionsRenderer.setDirections(result);
+      // Close info window
+      infoWindow.close();
+      // On mobile, maybe minimize the sheet?
+      const sheet = document.getElementById("mobile-sheet");
+      if (sheet) sheet.style.height = "12%"; // SNAP_COLLAPSED
+    } else {
+      console.error("Directions request failed due to " + status);
+      alert("Could not find a path. You might be too far away.");
+    }
+  });
+};
 
 /** Remove all campus markers from the map */
 function clearMarkers() {
@@ -555,9 +609,10 @@ function initBottomSheetDrag() {
   if (!sheet || !handle) return;
 
   const NAV_HEIGHT = 56;                   // bottom nav bar height
-  const SNAP_COLLAPSED = 0.12;             // 12% — just the handle visible
-  const SNAP_HALF      = 0.36;             // 36% — default half-open
-  const SNAP_FULL      = 0.85;             // 85% — fully expanded
+  // Percentages of parent height
+  const SNAP_COLLAPSED = 0.12;             
+  const SNAP_HALF      = 0.40;             
+  const SNAP_FULL      = 0.88;             
 
   let startY = 0;
   let startH = 0;
@@ -570,30 +625,45 @@ function initBottomSheetDrag() {
 
   // TOUCH events
   handle.addEventListener("touchstart", (e) => {
+    // Only drag if touching handle area
     dragging = true;
     startY   = e.touches[0].clientY;
     parentH  = sheet.parentElement.getBoundingClientRect().height;
     startH   = sheet.getBoundingClientRect().height / parentH;
     sheet.style.transition = "none";
-  }, { passive: true });
+    e.stopPropagation(); // Stop event bubbling
+  }, { passive: false });
 
-  handle.addEventListener("touchmove", (e) => {
+  document.addEventListener("touchmove", (e) => {
     if (!dragging) return;
-    const dy    = startY - e.touches[0].clientY;
-    const delta = dy / parentH;
-    let newH    = Math.min(SNAP_FULL, Math.max(SNAP_COLLAPSED, startH + delta));
-    setHeight(newH);
-  }, { passive: true });
+    e.preventDefault(); // Prevent scrolling while dragging sheet
+    
+    // Throttle with requestAnimationFrame for performance
+    window.requestAnimationFrame(() => {
+        const dy    = startY - e.touches[0].clientY;
+        const delta = dy / parentH;
+        let newH    = Math.min(SNAP_FULL, Math.max(SNAP_COLLAPSED, startH + delta));
+        setHeight(newH);
+    });
+  }, { passive: false });
 
-  handle.addEventListener("touchend", (e) => {
+  document.addEventListener("touchend", (e) => {
     if (!dragging) return;
     dragging = false;
-    sheet.style.transition = "height 0.3s ease-out";
+    sheet.style.transition = "height 0.3s cubic-bezier(0.25, 1, 0.5, 1)"; // Smoother easing
     // Snap to nearest breakpoint
     const curH = sheet.getBoundingClientRect().height / parentH;
     const snaps = [SNAP_COLLAPSED, SNAP_HALF, SNAP_FULL];
     const closest = snaps.reduce((a, b) => Math.abs(b - curH) < Math.abs(a - curH) ? b : a);
     setHeight(closest);
+  });
+  
+  // Make lists scrollable but not draggable
+  const lists = document.querySelectorAll("#rec-list-mobile, #saved-list, #alerts-list");
+  lists.forEach(list => {
+      list.addEventListener("touchstart", (e) => {
+          e.stopPropagation(); // Ensure scrolling the list doesn't trigger sheet drag
+      }, { passive: true });
   });
 
   // MOUSE events (for desktop testing in responsive mode)
