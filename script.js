@@ -28,11 +28,326 @@ let userMarker       = null;      // User's own location marker
 let userPosition     = null;      // { lat, lng } of the user
 let activeCategory   = "all";     // Current filter
 let infoWindow;                   // Shared InfoWindow
-let directionsService;            // Google Directions Service
-let directionsRenderer;           // Google Directions Renderer
 let isMobile         = window.innerWidth < 768; // responsive check
 let savedPlaces      = JSON.parse(localStorage.getItem("cu_saved") || "[]"); // saved bookmarks
 let activeTab        = "explore"; // current mobile tab
+
+// ──────────────────────────────────────────────
+// 2b. Campus Navigation Module (CampusNav)
+// ──────────────────────────────────────────────
+const CampusNav = (() => {
+  // Private state
+  let _directionsService  = null;
+  let _directionsRenderer = null;
+  let _watchId            = null;   // geolocation watchPosition ID
+  let _isNavigating       = false;
+  let _currentDest        = null;   // { lat, lng, name }
+  let _travelMode         = "WALKING";
+  let _destMarker         = null;   // pulsing destination marker
+  let _lastRouteTime      = 0;      // debounce timestamp
+  let _lastUserLatLng     = null;   // last position used to calc route
+  const DEBOUNCE_MS       = 500;    // min ms between route calls
+  const REROUTE_METERS    = 12;     // min deviation to reroute
+
+  /** Initialize services (call once after map is ready) */
+  function init(mapInstance) {
+    _directionsService = new google.maps.DirectionsService();
+    _directionsRenderer = new google.maps.DirectionsRenderer({
+      map: mapInstance,
+      suppressMarkers: true,
+      preserveViewport: false,
+      polylineOptions: {
+        strokeColor: "#1E3A8A",
+        strokeWeight: 6,
+        strokeOpacity: 0.9,
+      },
+    });
+  }
+
+  /** Core routing function — reusable */
+  function calculateRoute(origin, destination, travelMode) {
+    return new Promise((resolve, reject) => {
+      if (!_directionsService) return reject("Navigation not initialized.");
+
+      const now = Date.now();
+      if (now - _lastRouteTime < DEBOUNCE_MS) return reject("DEBOUNCE");
+      _lastRouteTime = now;
+
+      _directionsService.route(
+        {
+          origin,
+          destination,
+          travelMode: google.maps.TravelMode[travelMode || _travelMode],
+        },
+        (result, status) => {
+          if (status === "OK") {
+            resolve(result);
+          } else {
+            const messages = {
+              ZERO_RESULTS: "No route found between these locations.",
+              NOT_FOUND: "One of the locations could not be found.",
+              REQUEST_DENIED: "Directions request was denied. Check your API key.",
+              OVER_QUERY_LIMIT: "Too many requests. Please wait a moment.",
+            };
+            const friendly = messages[status] || "Could not calculate route.";
+            console.error(`Directions API [${status}]:`, result);
+            reject(friendly);
+          }
+        }
+      );
+    });
+  }
+
+  /** Render route result on the map and update info panel */
+  function renderRoute(result) {
+    _directionsRenderer.setDirections(result);
+
+    // Fit map to route
+    if (result.routes[0] && result.routes[0].bounds) {
+      map.fitBounds(result.routes[0].bounds, { top: 60, bottom: 100, left: 20, right: 20 });
+    }
+
+    // Extract leg info
+    const leg = result.routes[0].legs[0];
+    updateNavPanel(leg);
+  }
+
+  /** Build the step-by-step navigation info panel content */
+  function updateNavPanel(leg) {
+    const panel = document.getElementById("nav-panel");
+    const summary = document.getElementById("nav-summary");
+    if (!panel) return;
+
+    // Summary bar
+    if (summary) {
+      summary.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+            <span class="material-icons text-blue-600 dark:text-blue-400">${_travelMode === "WALKING" ? "directions_walk" : "directions_bike"}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-800 dark:text-white text-sm">${_currentDest ? _currentDest.name : "Destination"}</span>
+            </div>
+            <div class="flex items-center gap-3 mt-0.5">
+              <span class="text-xs font-semibold text-blue-600 dark:text-blue-300">${leg.distance.text}</span>
+              <span class="text-xs text-slate-400">·</span>
+              <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">${leg.duration.text}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Steps list
+    const stepsEl = document.getElementById("nav-steps");
+    if (stepsEl && leg.steps) {
+      stepsEl.innerHTML = leg.steps.map((step, i) => {
+        // Strip HTML tags from instructions
+        const text = step.instructions.replace(/<[^>]*>/g, " ").trim();
+        const maneuverIcon = getManeuverIcon(step.maneuver);
+        return `
+          <div class="flex gap-3 py-2.5 ${i < leg.steps.length - 1 ? "border-b border-slate-100 dark:border-slate-800" : ""}">
+            <div class="flex-shrink-0 h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <span class="material-icons text-slate-500 dark:text-slate-400" style="font-size:16px">${maneuverIcon}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">${text}</p>
+              <span class="text-[11px] text-slate-400 mt-0.5">${step.distance.text}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+      stepsEl.scrollTop = 0;
+    }
+
+    // Show panel
+    panel.classList.remove("hidden");
+  }
+
+  /** Map maneuver strings to Material Icons */
+  function getManeuverIcon(maneuver) {
+    const icons = {
+      "turn-left": "turn_left",
+      "turn-right": "turn_right",
+      "turn-slight-left": "turn_slight_left",
+      "turn-slight-right": "turn_slight_right",
+      "turn-sharp-left": "turn_sharp_left",
+      "turn-sharp-right": "turn_sharp_right",
+      "uturn-left": "u_turn_left",
+      "uturn-right": "u_turn_right",
+      "straight": "straight",
+      "roundabout-left": "roundabout_left",
+      "roundabout-right": "roundabout_right",
+      "merge": "merge",
+      "fork-left": "fork_left",
+      "fork-right": "fork_right",
+    };
+    return icons[maneuver] || "near_me";
+  }
+
+  /** Start navigating to a destination */
+  async function startNavigation(destLat, destLng, destName) {
+    if (!userPosition) {
+      alert("Enable location to navigate.");
+      return;
+    }
+
+    _currentDest = { lat: destLat, lng: destLng, name: destName || "Destination" };
+    _isNavigating = true;
+
+    // Clear any previous destination marker
+    if (_destMarker) { _destMarker.setMap(null); _destMarker = null; }
+
+    // Add pulsing destination marker
+    _destMarker = new google.maps.Marker({
+      position: { lat: destLat, lng: destLng },
+      map: map,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 14,
+        fillColor: "#1E3A8A",
+        fillOpacity: 0.25,
+        strokeColor: "#1E3A8A",
+        strokeWeight: 3,
+      },
+      zIndex: 998,
+      animation: google.maps.Animation.BOUNCE,
+    });
+    // Stop bounce after 2 seconds
+    setTimeout(() => { if (_destMarker) _destMarker.setAnimation(null); }, 2000);
+
+    // Close info window
+    if (infoWindow) infoWindow.close();
+
+    // Calculate initial route
+    try {
+      const result = await calculateRoute(userPosition, _currentDest, _travelMode);
+      renderRoute(result);
+      _lastUserLatLng = { ...userPosition };
+    } catch (err) {
+      if (err !== "DEBOUNCE") alert(err);
+      return;
+    }
+
+    // Show navigation UI
+    showNavUI();
+
+    // Start live tracking
+    startTracking();
+  }
+
+  /** Start continuous location tracking with watchPosition */
+  function startTracking() {
+    if (_watchId !== null) navigator.geolocation.clearWatch(_watchId);
+
+    _watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const newPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        userPosition = newPos;
+
+        // Smoothly update user marker
+        if (userMarker) {
+          userMarker.setPosition(newPos);
+        }
+
+        // Check if user deviated enough to reroute
+        if (_isNavigating && _lastUserLatLng && _currentDest) {
+          const moved = haversineDistance(_lastUserLatLng, newPos) * 1000; // meters
+          if (moved >= REROUTE_METERS) {
+            _lastUserLatLng = { ...newPos };
+            reroute();
+          }
+        }
+      },
+      (err) => console.warn("Watch position error:", err.message),
+      { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
+    );
+  }
+
+  /** Recalculate the route from current position */
+  async function reroute() {
+    if (!_isNavigating || !_currentDest || !userPosition) return;
+    try {
+      const result = await calculateRoute(userPosition, _currentDest, _travelMode);
+      renderRoute(result);
+    } catch (err) {
+      if (err !== "DEBOUNCE") console.warn("Reroute failed:", err);
+    }
+  }
+
+  /** Change travel mode and recalculate */
+  function setTravelMode(mode) {
+    if (mode === _travelMode) return;
+    _travelMode = mode;
+
+    // Update toggle UI
+    document.querySelectorAll(".travel-mode-btn").forEach(btn => {
+      btn.classList.toggle("active-mode", btn.dataset.mode === mode);
+    });
+
+    if (_isNavigating) reroute();
+  }
+
+  /** Show navigation overlay UI elements */
+  function showNavUI() {
+    const bar = document.getElementById("nav-bar");
+    if (bar) bar.classList.remove("hidden");
+
+    // On mobile, minimize the bottom sheet
+    const sheet = document.getElementById("mobile-sheet");
+    if (sheet && isMobile) sheet.style.height = "12%";
+  }
+
+  /** End navigation — clean up everything */
+  function endNavigation() {
+    _isNavigating = false;
+    _currentDest = null;
+    _lastUserLatLng = null;
+
+    // Stop tracking
+    if (_watchId !== null) {
+      navigator.geolocation.clearWatch(_watchId);
+      _watchId = null;
+    }
+
+    // Clear route from map
+    if (_directionsRenderer) _directionsRenderer.setDirections({ routes: [] });
+
+    // Remove destination marker
+    if (_destMarker) { _destMarker.setMap(null); _destMarker = null; }
+
+    // Hide navigation UI
+    const bar = document.getElementById("nav-bar");
+    if (bar) bar.classList.add("hidden");
+    const panel = document.getElementById("nav-panel");
+    if (panel) panel.classList.add("hidden");
+
+    // Reset view to campus center
+    if (map) {
+      map.setZoom(16);
+    }
+  }
+
+  /** Recenter map to user location */
+  function recenterToUser() {
+    if (userPosition) {
+      map.panTo(userPosition);
+      map.setZoom(17);
+    }
+  }
+
+  /** Public API */
+  return {
+    init,
+    calculateRoute,
+    startNavigation,
+    endNavigation,
+    setTravelMode,
+    recenterToUser,
+    isNavigating: () => _isNavigating,
+  };
+})();
 
 // ──────────────────────────────────────────────
 // 3. Initialise the Map (Google Maps callback)
@@ -171,17 +486,8 @@ function initMap() {
 
   infoWindow = new google.maps.InfoWindow();
 
-  // Initialize Directions Service
-  directionsService = new google.maps.DirectionsService();
-  directionsRenderer = new google.maps.DirectionsRenderer({
-    map: map,
-    suppressMarkers: true, // We use our own markers
-    polylineOptions: {
-      strokeColor: "#3b82f6", // Blue path
-      strokeWeight: 5,
-      strokeOpacity: 0.8,
-    },
-  });
+  // Initialize the Navigation Module
+  CampusNav.init(map);
 
   // Place campus markers
   placeMarkers(campusLocations);
@@ -195,26 +501,12 @@ function initMap() {
   // Request the user's geolocation
   requestUserLocation();
 
-  // "My Location" FAB on mobile
+  // "My Location" FAB on mobile — handled by onclick="CampusNav.recenterToUser()" in HTML
+  // Also request location if not yet available
   const locateBtn = document.getElementById("locate-btn");
   if (locateBtn) {
     locateBtn.addEventListener("click", () => {
-      if (userPosition) {
-        // Ensure user position is within bounds before panning
-        if (
-          userPosition.lat <= restrictedBounds.north &&
-          userPosition.lat >= restrictedBounds.south &&
-          userPosition.lng <= restrictedBounds.east &&
-          userPosition.lng >= restrictedBounds.west
-        ) {
-          map.panTo(userPosition);
-          map.setZoom(17);
-        } else {
-          alert("You are outside the campus boundary.");
-        }
-      } else {
-        requestUserLocation();
-      }
+      if (!userPosition) requestUserLocation();
     });
   }
 
@@ -254,28 +546,29 @@ function placeMarkers(locations) {
       animation: google.maps.Animation.DROP,
     });
 
-    // Click → show info window
+    // Click → show info window with Navigate button
     marker.addListener("click", () => {
       const distText = userPosition
         ? `📏 ${haversineDistance(userPosition, loc).toFixed(2)} km away`
         : "";
-      
+
+      const safeName = loc.name.replace(/'/g, "\\'");
       const contentString = `
-        <div style="font-family:Inter,sans-serif;max-width:220px">
+        <div style="font-family:Inter,sans-serif;max-width:230px;padding:2px">
           <div style="margin-bottom:8px">
             <strong style="font-size:1.1em;color:#1e293b">${loc.name}</strong><br/>
             <span style="text-transform:capitalize;color:#64748b;font-size:0.9em">${loc.category}</span>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
              <span style="font-size:0.85em;color:#3b82f6;font-weight:500">${distText}</span>
-             <button onclick="window.calcRouteTo(${loc.lat}, ${loc.lng})" 
-               style="background:#3b82f6;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.85em;font-weight:500">
-               Go ↗
+             <button onclick="CampusNav.startNavigation(${loc.lat}, ${loc.lng}, '${safeName}')" 
+               style="background:#1E3A8A;color:white;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:0.85em;font-weight:600;display:flex;align-items:center;gap:4px">
+               <span style="font-size:14px" class="material-icons">navigation</span> Navigate
              </button>
           </div>
         </div>
       `;
-      
+
       infoWindow.setContent(contentString);
       infoWindow.open(map, marker);
     });
@@ -283,35 +576,6 @@ function placeMarkers(locations) {
     markers.push(marker);
   });
 }
-
-/** Global function to calculate route from user location */
-window.calcRouteTo = function(lat, lng) {
-  if (!userPosition) {
-    alert("Please wait for your location to be detected or check permissions.");
-    requestUserLocation();
-    return;
-  }
-  
-  const request = {
-    origin: userPosition,
-    destination: { lat, lng },
-    travelMode: google.maps.TravelMode.WALKING,
-  };
-
-  directionsService.route(request, (result, status) => {
-    if (status === "OK") {
-      directionsRenderer.setDirections(result);
-      // Close info window
-      infoWindow.close();
-      // On mobile, maybe minimize the sheet?
-      const sheet = document.getElementById("mobile-sheet");
-      if (sheet) sheet.style.height = "12%"; // SNAP_COLLAPSED
-    } else {
-      console.error("Directions request failed due to " + status);
-      alert("Could not find a path. You might be too far away.");
-    }
-  });
-};
 
 /** Remove all campus markers from the map */
 function clearMarkers() {
@@ -476,7 +740,7 @@ function buildDesktopCard(loc) {
               <span class="material-icons-round text-sm mr-1">near_me</span>
               ${distLabel}
             </div>
-            <button class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-full font-medium transition-colors">Navigate</button>
+            <button class="text-xs bg-primary hover:bg-primary-light text-white px-3 py-1.5 rounded-full font-semibold transition-colors" onclick="event.stopPropagation(); CampusNav.startNavigation(${loc.lat}, ${loc.lng}, '${loc.name.replace(/'/g, "\\'")}')"><span class="material-icons-round align-middle" style="font-size:13px">navigation</span> Navigate</button>
           </div>
         </div>
       </div>
@@ -518,8 +782,8 @@ function buildMobileCard(loc) {
         <button class="save-btn h-8 w-8 rounded-full flex items-center justify-center transition-colors ${heartColor}" onclick="event.stopPropagation(); toggleSave('${safeName}')">
           <span class="material-icons text-lg">${heartIcon}</span>
         </button>
-        <button class="h-8 w-8 rounded-full bg-slate-50 dark:bg-slate-700 hover:bg-primary hover:text-white dark:hover:bg-primary flex items-center justify-center transition-colors text-slate-400" onclick="event.stopPropagation();">
-          <span class="material-icons text-sm">near_me</span>
+        <button class="h-8 w-8 rounded-full bg-slate-50 dark:bg-slate-700 hover:bg-primary hover:text-white dark:hover:bg-primary flex items-center justify-center transition-colors text-slate-400" onclick="event.stopPropagation(); CampusNav.startNavigation(${loc.lat}, ${loc.lng}, '${safeName}')">
+          <span class="material-icons text-sm">navigation</span>
         </button>
       </div>
     </div>`;

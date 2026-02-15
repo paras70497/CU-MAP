@@ -155,9 +155,51 @@
       </div>
 
       <!-- My Location FAB (mobile, positioned above bottom sheet) -->
-      <button id="locate-btn" class="md:hidden absolute bottom-[52%] right-4 z-30 bg-white dark:bg-slate-800 p-3 rounded-full shadow-lg text-primary dark:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all">
+      <button id="locate-btn" class="md:hidden absolute bottom-[52%] right-4 z-30 bg-white dark:bg-slate-800 p-3 rounded-full shadow-lg text-primary dark:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all" onclick="CampusNav.recenterToUser()">
         <span class="material-icons">my_location</span>
       </button>
+
+      <!-- ============================================================ -->
+      <!--  NAVIGATION BAR — Floating overlay (shown during navigation) -->
+      <!-- ============================================================ -->
+      <div id="nav-bar" class="hidden absolute bottom-4 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-40 bg-white dark:bg-slate-900 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.18)] border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <!-- Nav Summary -->
+        <div id="nav-summary" class="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+          <!-- Filled dynamically by CampusNav -->
+        </div>
+        
+        <!-- Travel Mode Toggle -->
+        <div class="flex items-center gap-2 px-4 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+          <span class="text-xs text-slate-500 dark:text-slate-400 font-medium mr-1">Mode:</span>
+          <button class="travel-mode-btn active-mode flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition-all" data-mode="WALKING" onclick="CampusNav.setTravelMode('WALKING')">
+            <span class="material-icons" style="font-size:15px">directions_walk</span> Walk
+          </button>
+          <button class="travel-mode-btn flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition-all" data-mode="BICYCLING" onclick="CampusNav.setTravelMode('BICYCLING')">
+            <span class="material-icons" style="font-size:15px">directions_bike</span> Bike
+          </button>
+          <div class="flex-1"></div>
+          <button class="recenter-btn p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-500" onclick="CampusNav.recenterToUser()" title="Recenter to my location">
+            <span class="material-icons" style="font-size:18px">my_location</span>
+          </button>
+        </div>
+
+        <!-- Step-by-step panel (collapsible) -->
+        <div id="nav-panel" class="hidden">
+          <div id="nav-steps" class="max-h-[180px] md:max-h-[240px] overflow-y-auto px-4 py-2 custom-scrollbar">
+            <!-- Steps rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- End Navigation -->
+        <div class="px-4 py-3 flex items-center gap-2">
+          <button onclick="document.getElementById('nav-panel').classList.toggle('hidden')" class="flex-1 text-center py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+            <span class="material-icons align-middle" style="font-size:14px">list</span> Steps
+          </button>
+          <button onclick="CampusNav.endNavigation()" class="flex-1 text-center py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-colors">
+            <span class="material-icons align-middle" style="font-size:14px">close</span> End Navigation
+          </button>
+        </div>
+      </div>
     </section>
 
     <!-- ============================================================== -->
