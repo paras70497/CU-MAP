@@ -30,7 +30,6 @@ let activeCategory   = "all";     // Current filter
 let infoWindow;                   // Shared InfoWindow
 let isMobile         = window.innerWidth < 768; // responsive check
 let savedPlaces      = JSON.parse(localStorage.getItem("cu_saved") || "[]"); // saved bookmarks
-let activeTab        = "explore"; // current mobile tab
 
 // ──────────────────────────────────────────────
 // 2b. Campus Navigation Module (CampusNav)
@@ -286,6 +285,8 @@ const CampusNav = (() => {
       btn.classList.toggle("active-mode", btn.dataset.mode === mode);
     });
 
+    // Reset debounce so the new mode triggers a fresh API call
+    _lastRouteTime = 0;
     if (_isNavigating) reroute();
   }
 
@@ -458,6 +459,7 @@ function initMap() {
     mapTypeControlOptions: {
       position: google.maps.ControlPosition.TOP_RIGHT,
     },
+    gestureHandling: "greedy",  // Single-finger drag on mobile
     streetViewControl: false,
     fullscreenControl: false,
     zoomControl: true,
@@ -872,11 +874,10 @@ function initBottomSheetDrag() {
   const handle = document.getElementById("sheet-handle");
   if (!sheet || !handle) return;
 
-  const NAV_HEIGHT = 56;                   // bottom nav bar height
-  // Percentages of parent height
-  const SNAP_COLLAPSED = 0.12;             
-  const SNAP_HALF      = 0.40;             
-  const SNAP_FULL      = 0.88;             
+  // Percentages of parent height (no bottom nav bar)
+  const SNAP_COLLAPSED = 0.10;             
+  const SNAP_HALF      = 0.38;             
+  const SNAP_FULL      = 0.92;             
 
   let startY = 0;
   let startH = 0;
@@ -922,13 +923,13 @@ function initBottomSheetDrag() {
     setHeight(closest);
   });
   
-  // Make lists scrollable but not draggable
-  const lists = document.querySelectorAll("#rec-list-mobile, #saved-list, #alerts-list");
-  lists.forEach(list => {
-      list.addEventListener("touchstart", (e) => {
-          e.stopPropagation(); // Ensure scrolling the list doesn't trigger sheet drag
-      }, { passive: true });
-  });
+  // Make list scrollable but not draggable
+  const list = document.getElementById("rec-list-mobile");
+  if (list) {
+    list.addEventListener("touchstart", (e) => {
+      e.stopPropagation(); // Ensure scrolling the list doesn't trigger sheet drag
+    }, { passive: true });
+  }
 
   // MOUSE events (for desktop testing in responsive mode)
   handle.addEventListener("mousedown", (e) => {
@@ -960,53 +961,7 @@ function initBottomSheetDrag() {
 }
 
 // ──────────────────────────────────────────────
-// 10. Tab Switching (Mobile Bottom Nav)
-// ──────────────────────────────────────────────
-
-function switchTab(tab) {
-  activeTab = tab;
-
-  // Toggle tab panels
-  const tabs = ["explore", "saved", "alerts", "profile"];
-  tabs.forEach((t) => {
-    const el = document.getElementById(`tab-${t}`);
-    if (el) el.classList.toggle("hidden", t !== tab);
-  });
-
-  // Toggle nav‑button active styling
-  document.querySelectorAll("#bottom-nav .nav-tab").forEach((btn) => {
-    const isActive = btn.dataset.tab === tab;
-    btn.classList.toggle("text-primary", isActive);
-    btn.classList.toggle("dark:text-blue-400", isActive);
-    btn.classList.toggle("text-slate-500", !isActive);
-    btn.classList.toggle("dark:text-slate-400", !isActive);
-  });
-
-  // Show/hide mobile filters (only in explore tab)
-  const filterBar = document.querySelector(".md\\:hidden.absolute.top-\\[68px\\]");
-  if (filterBar) filterBar.style.display = tab === "explore" ? "" : "none";
-
-  // Show/hide locate FAB (only in explore tab)
-  const locBtn = document.getElementById("locate-btn");
-  if (locBtn) locBtn.style.display = tab === "explore" ? "" : "none";
-
-  // When switching to Saved tab, rebuild the saved list
-  if (tab === "saved") renderSavedList();
-
-  // Ensure sheet is at least half-open when switching tabs
-  const sheet = document.getElementById("mobile-sheet");
-  if (sheet) {
-    const parentH = sheet.parentElement.getBoundingClientRect().height;
-    const curFrac = sheet.getBoundingClientRect().height / parentH;
-    if (curFrac < 0.30) {
-      sheet.style.transition = "height 0.3s ease-out";
-      sheet.style.height = "36%";
-    }
-  }
-}
-
-// ──────────────────────────────────────────────
-// 11. Saved Places
+// 10. Saved Places
 // ──────────────────────────────────────────────
 
 function isSaved(locName) {
@@ -1020,12 +975,12 @@ function toggleSave(locName) {
     savedPlaces.push(locName);
   }
   localStorage.setItem("cu_saved", JSON.stringify(savedPlaces));
-  // Refresh both lists so heart icons update
+  // Refresh lists so heart icons update
   updateRecommendations();
-  if (activeTab === "saved") renderSavedList();
 }
 
 function renderSavedList() {
+  // Desktop sidebar saved list (kept for future use)
   const listEl = document.getElementById("saved-list");
   if (!listEl) return;
 
@@ -1033,17 +988,8 @@ function renderSavedList() {
     .filter((l) => isSaved(l.name))
     .map((l) => (userPosition ? { ...l, dist: haversineDistance(userPosition, l) } : l));
 
-  const emptyHTML = `
-    <div id="saved-empty" class="flex flex-col items-center justify-center py-10 text-center">
-      <div class="h-16 w-16 rounded-full bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center mb-4">
-        <span class="material-icons text-3xl text-rose-400">favorite</span>
-      </div>
-      <h3 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-1">No saved places yet</h3>
-      <p class="text-xs text-slate-400 max-w-[200px]">Tap the heart icon on any location card to save it here for quick access.</p>
-    </div>`;
-
   if (savedLocs.length === 0) {
-    listEl.innerHTML = emptyHTML;
+    listEl.innerHTML = "";
     return;
   }
 

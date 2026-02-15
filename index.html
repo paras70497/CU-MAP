@@ -154,8 +154,8 @@
         </div>
       </div>
 
-      <!-- My Location FAB (mobile, positioned above bottom sheet) -->
-      <button id="locate-btn" class="md:hidden absolute bottom-[52%] right-4 z-30 bg-white dark:bg-slate-800 p-3 rounded-full shadow-lg text-primary dark:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all" onclick="CampusNav.recenterToUser()">
+      <!-- My Location FAB (mobile) -->
+      <button id="locate-btn" class="md:hidden absolute bottom-28 right-4 z-30 bg-white dark:bg-slate-800 p-3 rounded-full shadow-lg text-primary dark:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all" onclick="CampusNav.recenterToUser()">
         <span class="material-icons">my_location</span>
       </button>
 
@@ -203,155 +203,23 @@
     </section>
 
     <!-- ============================================================== -->
-    <!--  MOBILE BOTTOM SHEET — Draggable (hidden on md+)              -->
+    <!--  MOBILE BOTTOM SHEET — Simplified (hidden on md+)             -->
     <!-- ============================================================== -->
-    <div class="md:hidden absolute left-0 right-0 z-50 bg-white dark:bg-slate-900 rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] flex flex-col transition-[height] duration-300 ease-out" id="mobile-sheet" style="bottom:56px; height:36%;">
+    <div class="md:hidden absolute left-0 right-0 bottom-0 z-50 bg-white dark:bg-slate-900 rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] flex flex-col transition-[height] duration-300 ease-out" id="mobile-sheet" style="height:30%;">
       <!-- Drag Handle -->
       <div id="sheet-handle" class="w-full flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing touch-none select-none">
-        <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+        <div class="w-10 h-1 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
       </div>
 
-      <!-- ===== TAB: Explore (nearby places) ===== -->
-      <div id="tab-explore" class="flex-1 flex flex-col overflow-hidden">
-        <div class="px-5 pb-2 pt-1 flex justify-between items-end">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Nearby Places</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400" id="rec-status-mobile">Detecting your location…</p>
-          </div>
+      <!-- Nearby Places -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="px-4 pb-1.5 pt-0.5 flex justify-between items-center">
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Nearby</h2>
+          <p class="text-[11px] text-slate-400 dark:text-slate-500" id="rec-status-mobile">Detecting…</p>
         </div>
-        <div id="rec-list-mobile" class="flex-1 overflow-y-auto px-5 pb-4 pt-2 space-y-3 no-scrollbar">
+        <div id="rec-list-mobile" class="flex-1 overflow-y-auto px-4 pb-4 pt-1 space-y-2 no-scrollbar">
         </div>
       </div>
-
-      <!-- ===== TAB: Saved ===== -->
-      <div id="tab-saved" class="flex-1 flex flex-col overflow-hidden hidden">
-        <div class="px-5 pb-2 pt-1">
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Saved Places</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Your bookmarked locations</p>
-        </div>
-        <div id="saved-list" class="flex-1 overflow-y-auto px-5 pb-4 pt-2 space-y-3 no-scrollbar">
-          <!-- Populated by JS -->
-        </div>
-      </div>
-
-      <!-- ===== TAB: Alerts ===== -->
-      <div id="tab-alerts" class="flex-1 flex flex-col overflow-hidden hidden">
-        <div class="px-5 pb-2 pt-1">
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Alerts</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Campus notifications</p>
-        </div>
-        <div id="alerts-list" class="flex-1 overflow-y-auto px-5 pb-4 pt-2 space-y-3 no-scrollbar">
-          <!-- Preset alerts -->
-          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800/40 flex gap-3">
-            <div class="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-800/40 flex items-center justify-center flex-shrink-0">
-              <span class="material-icons text-blue-600 dark:text-blue-400 text-lg">schedule</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">Library Hours Extended</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Library Block open until 11 PM during exam week.</p>
-              <p class="text-[10px] text-slate-400 mt-1">2 hours ago</p>
-            </div>
-          </div>
-          <div class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800/40 flex gap-3">
-            <div class="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-800/40 flex items-center justify-center flex-shrink-0">
-              <span class="material-icons text-orange-600 dark:text-orange-400 text-lg">construction</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">Block D Under Maintenance</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Use alternate route via Block C. Expected to reopen Feb 18.</p>
-              <p class="text-[10px] text-slate-400 mt-1">5 hours ago</p>
-            </div>
-          </div>
-          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border border-green-100 dark:border-green-800/40 flex gap-3">
-            <div class="h-10 w-10 rounded-full bg-green-100 dark:bg-green-800/40 flex items-center justify-center flex-shrink-0">
-              <span class="material-icons text-green-600 dark:text-green-400 text-lg">event</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">Sports Meet Tomorrow</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cricket Ground & Football Ground reserved 9 AM – 5 PM.</p>
-              <p class="text-[10px] text-slate-400 mt-1">Yesterday</p>
-            </div>
-          </div>
-          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-100 dark:border-purple-800/40 flex gap-3">
-            <div class="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-800/40 flex items-center justify-center flex-shrink-0">
-              <span class="material-icons text-purple-600 dark:text-purple-400 text-lg">restaurant</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">New Cafe Opening</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">A new cafe opens near Block A next Monday. Free samples!</p>
-              <p class="text-[10px] text-slate-400 mt-1">2 days ago</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== TAB: Profile ===== -->
-      <div id="tab-profile" class="flex-1 flex flex-col overflow-hidden hidden">
-        <div class="px-5 pb-2 pt-1">
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Profile</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Your campus account</p>
-        </div>
-        <div class="flex-1 overflow-y-auto px-5 pb-4 pt-2 no-scrollbar">
-          <!-- Avatar section -->
-          <div class="flex items-center gap-4 mb-6">
-            <div class="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-primary/30">CU</div>
-            <div>
-              <h3 class="font-bold text-slate-900 dark:text-white text-base">CU Student</h3>
-              <p class="text-xs text-slate-400">student@cumail.in</p>
-            </div>
-          </div>
-          <!-- Settings items -->
-          <div class="space-y-1">
-            <button class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left" onclick="document.documentElement.classList.toggle('dark')">
-              <span class="material-icons text-slate-500 dark:text-slate-400">dark_mode</span>
-              <span class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Dark Mode</span>
-              <span class="material-icons text-slate-300 dark:text-slate-600 text-lg">chevron_right</span>
-            </button>
-            <button class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left">
-              <span class="material-icons text-slate-500 dark:text-slate-400">notifications</span>
-              <span class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Notification Preferences</span>
-              <span class="material-icons text-slate-300 dark:text-slate-600 text-lg">chevron_right</span>
-            </button>
-            <button class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left">
-              <span class="material-icons text-slate-500 dark:text-slate-400">language</span>
-              <span class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Language</span>
-              <span class="text-xs text-slate-400 mr-1">English</span>
-              <span class="material-icons text-slate-300 dark:text-slate-600 text-lg">chevron_right</span>
-            </button>
-            <button class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left">
-              <span class="material-icons text-slate-500 dark:text-slate-400">help_outline</span>
-              <span class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">Help & Support</span>
-              <span class="material-icons text-slate-300 dark:text-slate-600 text-lg">chevron_right</span>
-            </button>
-            <button class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left">
-              <span class="material-icons text-slate-500 dark:text-slate-400">info</span>
-              <span class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">About CU Guide</span>
-              <span class="text-xs text-slate-400 mr-1">v1.0</span>
-              <span class="material-icons text-slate-300 dark:text-slate-600 text-lg">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- MOBILE BOTTOM NAV BAR (hidden on md+) -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-2 px-6 flex justify-between items-center z-[60] text-xs font-medium text-slate-500 dark:text-slate-400" id="bottom-nav">
-      <button class="nav-tab flex flex-col items-center gap-0.5 text-primary dark:text-blue-400 transition-colors" data-tab="explore" onclick="switchTab('explore')">
-        <span class="material-icons text-[22px]">map</span>
-        <span>Explore</span>
-      </button>
-      <button class="nav-tab flex flex-col items-center gap-0.5 transition-colors" data-tab="saved" onclick="switchTab('saved')">
-        <span class="material-icons text-[22px]">favorite_border</span>
-        <span>Saved</span>
-      </button>
-      <button class="nav-tab flex flex-col items-center gap-0.5 transition-colors" data-tab="alerts" onclick="switchTab('alerts')">
-        <span class="material-icons text-[22px]">notifications_none</span>
-        <span>Alerts</span>
-      </button>
-      <button class="nav-tab flex flex-col items-center gap-0.5 transition-colors" data-tab="profile" onclick="switchTab('profile')">
-        <span class="material-icons text-[22px]">person_outline</span>
-        <span>Profile</span>
-      </button>
     </div>
 
     <!-- ============================================================== -->
